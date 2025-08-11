@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preload" as="image" href="assets/Dhruv.jpeg" />
+<title>Dhruv Ojha — VP, Tech & Innovation Club (ISB) | L.I.F.T. Deck</title>
+
+<style>
+  :root{
+    --w:1280; --h:720; /* 16:9 base canvas */
+    --bg:#0b1220; --bg2:#0a0f1d;
+    --ink:#ecf2ff; --muted:#a9b6d3;
+    --accent:#69a6ff; --ok:#66d9a3; --line:#21324e;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    height:100%; margin:0; overflow:hidden;
+    background:linear-gradient(160deg,var(--bg),var(--bg2) 60%);
+    color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  }
+
+  /* Deck canvas */
+  .deck{
+    position:fixed; top:50%; left:50%;
+    width:calc(var(--w)*1px); height:calc(var(--h)*1px);
+    transform-origin:center;
+    border-radius:18px; background:rgba(8,12,24,.92);
+    box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.05);
+    overflow:hidden;
+  }
+
+  /* Slides */
+  .slide{
+    position:absolute; inset:0; padding:44px 44px 36px;
+    display:grid; grid-template-rows:auto 1fr auto;
+    opacity:0; transform:translateX(60px) scale(.985);
+    transition:.45s cubic-bezier(.2,.8,.2,1);
+    pointer-events:none;
+  }
+  .slide.active{opacity:1; transform:translateX(0) scale(1); pointer-events:auto; z-index:1}
+
+  /* Slide header + basics */
+  header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+  .slide > header{
+    background: linear-gradient(180deg, rgba(17,28,49,.6), rgba(14,23,40,.35));
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+  .title{font-weight:800; letter-spacing:.2px}
+  .subtitle{color:var(--muted); font-size:14px}
+  .content{display:grid; gap:12px}
+  .slide > .content{ transform-origin: top center; } /* safe scale target */
+
+  /* Width caps on text-heavy slides */
+  .slide:nth-of-type(2) .content,
+  .slide:nth-of-type(4) .content,
+  .slide:nth-of-type(6) .content { max-width:980px; margin:0 auto; }
+  .slide:nth-of-type(2) .content h2{ max-width:980px; }
+
+  /* LIFT slide content area should fill height */
+  .slide:nth-of-type(3) .content{ max-width:1100px; margin:0 auto; height:100%; }
+
+  h1{margin:0 0 6px; font-size:48px; line-height:1.1; letter-spacing:.2px}
+  h2{margin:0 0 8px; font-size:38px}
+  p{margin:0; font-size:18px; line-height:1.55; color:var(--muted)}
+  ul{margin:0; padding-left:20px; display:grid; gap:8px; color:var(--muted); font-size:18px; line-height:1.48}
+  .card ul{gap:8px}
+  .slide:nth-of-type(3) .card ul{ gap:6px; font-size:17px; line-height:1.42 } /* denser on LIFT */
+
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+
+  /* Slide 1 hero layout */
+  .hero{display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch}
+  .hero > *{height:100%}
+  .panel{
+    border:1px solid var(--line); border-radius:16px; padding:20px;
+    background:linear-gradient(180deg, rgba(16,27,47,.75), rgba(13,22,39,.55));
+    min-height:400px; display:flex; flex-direction:column; justify-content:center;
+  }
+  .hero-photo{
+    width:100%; height:400px; border-radius:16px; border:1px solid rgba(105,166,255,.35);
+    background:
+      linear-gradient(180deg, rgba(16,27,47,.25), rgba(13,22,39,.15)),
+      url('assets/Dhruv.jpeg') center 25% / cover no-repeat;
+    box-shadow:0 14px 36px rgba(0,0,0,.35);
+  }
+  .panel h1{font-size:44px; margin:0 0 8px}
+  .panel h1::after{
+    content:""; display:block; width:72px; height:4px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    border-radius:2px; margin-top:8px;
+  }
+  .panel p.big{font-size:22px; color:var(--ink); margin:6px 0 8px; font-weight:600}
+  .panel p.quote{font-style:italic; color:var(--muted)}
+
+  /* Cards */
+  .card{
+    border:1px solid var(--line); border-radius:16px; padding:12px;
+    background:linear-gradient(180deg, rgba(16,27,47,.75), rgba(13,22,39,.55));
+  }
+  .kicker{color:var(--ok); font-weight:800; font-size:12px; letter-spacing:1.2px; text-transform:uppercase}
+  .icon{font-size:22px; margin-right:8px; vertical-align:-2px}
+
+  /* LIFT grid: true 2×2 on desktop */
+  .lift-grid{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    grid-template-rows:1fr 1fr;
+    gap:12px;
+  }
+  .lift-grid .card{ display:flex; flex-direction:column; }
+  .lift-grid .card ul{ margin-top:4px; }
+  .lift-grid h3{margin:2px 0 4px; font-size:20px}
+
+  /* Accordion base (all viewports) */
+  .acc-head{
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    width: 100%;
+    padding: 6px 6px 8px;
+    border-radius: 10px;
+  }
+  .acc-head .title-wrap{ display:flex; align-items:center; gap:8px; }
+  .acc-head .chev{ margin-left:auto; transition:transform .2s ease; font-size:18px; opacity:.8; }
+  .acc-head[aria-expanded="true"] .chev{ transform:rotate(180deg); }
+  .acc-panel{
+    overflow:hidden;
+    max-height:0;
+    padding:0 6px;                 /* avoid big empty area when collapsed */
+    transition:max-height .25s ease;
+  }
+  /* give a little breathing room only when open */
+  .acc-head[aria-expanded="true"] + .acc-panel{ padding-bottom:8px; }
+
+  /* Keep "L • I • F • T" aligned and unwrapped in headers */
+  .slide > header .logo{ white-space: nowrap; letter-spacing:.3px; font-weight:700; color:var(--muted); }
+
+  /* Remove faint watermark */
+  .lift-grid::before{ display:none; }
+
+  /* Animations */
+  @keyframes floatIn { from { opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+  .slide .icon, .slide .card h3 { opacity: 0; }
+  .slide.active .icon, .slide.active .card h3 { animation: floatIn .5s ease forwards; }
+  .lift-grid .card:nth-child(1) .icon, .lift-grid .card:nth-child(1) h3 { animation-delay: .05s; }
+  .lift-grid .card:nth-child(2) .icon, .lift-grid .card:nth-child(2) h3 { animation-delay: .15s; }
+  .lift-grid .card:nth-child(3) .icon, .lift-grid .card:nth-child(3) h3 { animation-delay: .25s; }
+  .lift-grid .card:nth-child(4) .icon, .lift-grid .card:nth-child(4) h3 { animation-delay: .35s; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .slide .content li { opacity: 0; transform: translateY(6px); }
+    .slide.active .content li { animation: floatIn .45s ease forwards; }
+    .slide.active .content li:nth-child(1) { animation-delay: .06s; }
+    .slide.active .content li:nth-child(2) { animation-delay: .12s; }
+    .slide.active .content li:nth-child(3) { animation-delay: .18s; }
+    .slide.active .content li:nth-child(4) { animation-delay: .24s; }
+    .slide.active .content li:nth-child(5) { animation-delay: .30s; }
+    .slide.active .content li:nth-child(6) { animation-delay: .36s; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slide .content li, .slide .icon, .slide .card h3 { opacity: 1 !important; transform: none !important; animation: none !important; }
+  }
+
+  /* Two-column list on Non-Tech slide (desktop only) */
+  .two-col{ columns:2; column-gap:24px; column-fill:balance; column-rule:1px solid var(--line); padding-left:18px; }
+  .two-col li{ break-inside:avoid; padding-bottom:4px; }
+
+  /* Dots + controls */
+  .dots{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:10px}
+  .dot{width:12px; height:12px; border-radius:50%; background:#33445f; border:1px solid #4a5e82; opacity:.7; transition:transform .2s ease; cursor:pointer;}
+  .dot.active{background:var(--accent); opacity:1; animation:dotPulse 1.4s ease-in-out infinite;}
+  @keyframes dotPulse{ from{ transform:scale(1); } 50%{ transform:scale(1.2); } to{ transform:scale(1); } }
+
+  .controls{position:absolute; inset:auto 0 0; display:flex; justify-content:space-between; pointer-events:none}
+  .arrow{pointer-events:auto; cursor:pointer; user-select:none; width:44px; height:44px; border-radius:50%; border:1px solid var(--line); display:grid; place-items:center; background:rgba(14,23,40,.6); margin:12px; font-size:18px}
+  .arrow:hover{background:rgba(14,23,40,.8)}
+  .hint{position:absolute; right:16px; bottom:14px; color:var(--muted); font-size:12px}
+
+  /* Tablet */
+  @media (max-width: 1024px) {
+    :root{ --w: 1024; }
+    .slide{ padding: 40px 40px 32px; }
+    h1{ font-size: 44px; }
+    h2{ font-size: 34px; }
+    p{ font-size: 17px; }
+    ul{ font-size: 17px; line-height: 1.46; gap: 7px; }
+
+    .hero{ grid-template-columns: 1fr; gap: 16px; }
+    .hero-photo{ height: 360px; background:
+        linear-gradient(180deg, rgba(16,27,47,.25), rgba(13,22,39,.15)),
+        url('assets/Dhruv.jpeg') center 28% / cover no-repeat; }
+
+    .grid-2{ grid-template-columns: 1fr; gap: 16px; }
+    .lift-grid{ grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .arrow{ width: 52px; height: 52px; font-size: 20px; }
+    .dots{ bottom: 14px; }
+  }
+
+  /* Mobile portrait — accordion mode for LIFT */
+  @media (max-width: 640px) {
+    :root{ --w: 420; --h: 800; }
+    .deck{ border-radius: 8px; }
+    .slide{ padding: 22px 18px 14px; }
+    .slide > header{ padding: 8px 10px; }
+    .title{ font-size: 17px; }
+    h1{ font-size: 30px; }
+    h2{ font-size: 24px; }
+    p{ font-size: 15px; }
+    ul{ font-size: 15px; line-height: 1.42; gap: 5px; }
+
+    .hero{ grid-template-columns: 1fr; gap: 12px; }
+    .panel{ padding: 14px; min-height: 0; }
+    .hero-photo{ height: 260px; background:
+        linear-gradient(180deg, rgba(16,27,47,.25), rgba(13,22,39,.12)),
+        url('assets/Dhruv.jpeg') center 30% / cover no-repeat; }
+
+    /* LIFT: accordion (phone layout specifics) */
+    .slide:nth-of-type(3) .content{ height:100%; }
+    .lift-grid{ grid-template-columns: 1fr; gap: 10px; }
+    .lift-grid h3{ font-size: 17px; margin: 0; }
+    .slide:nth-of-type(3) .card ul{ font-size: 14.5px; line-height:1.38; gap:4px; margin-top:6px; }
+
+    .two-col{ columns: 1; column-gap: 0; column-rule: 0; padding-left: 18px; }
+    .grid-2{ grid-template-columns: 1fr; gap: 12px; }
+
+    .arrow{ width: 58px; height: 58px; font-size: 22px; margin: 8px; }
+    .dots{ bottom: 8px; }
+    .hint{ right: 10px; bottom: 6px; font-size: 11px; }
+
+    .progress{ left: 12px; right: 12px; bottom: 4px; }
+    .counter{ bottom: 10px; left: 12px; font-size: 11px; }
+  }
+
+  /* Extra-small phones */
+  @media (max-width: 380px) {
+    :root{ --w: 380; --h: 720; }
+    h1{ font-size: 28px; }
+    h2{ font-size: 22px; }
+    p, ul{ font-size: 14px; }
+    .hero-photo{ height: 230px; background:
+        linear-gradient(180deg, rgba(16,27,47,.25), rgba(13,22,39,.12)),
+        url('assets/Dhruv.jpeg') center 32% / cover no-repeat; }
+  }
+
+  /* Compact mode */
+  body.compact .slide{ padding:38px 38px 28px; }
+  body.compact h1{ font-size:42px; }
+  body.compact h2{ font-size:32px; }
+  body.compact .card{ padding:12px; }
+  body.compact .lift-grid h3{ font-size:19px; margin:2px 0; }
+  body.compact .slide:nth-of-type(3) .card ul{ font-size:15.5px; line-height:1.38; gap:5px; }
+  body.compact .dots{ bottom:8px; }
+
+  .compact-toggle{
+    position:fixed; top:12px; right:12px; z-index:20;
+    padding:6px 10px; font-size:12px; letter-spacing:.2px;
+    color:var(--ink); background:rgba(14,23,40,.6);
+    border:1px solid var(--line); border-radius:999px; cursor:pointer;
+    backdrop-filter:saturate(120%);
+  }
+  .compact-toggle:hover{ background:rgba(14,23,40,.8); }
+</style>
+
+<style>
+  /* Micro-balance */
+  .slide:nth-of-type(1) .content{ max-width:1100px; margin:0 auto; }
+  .slide:nth-of-type(3) .card ul li{ margin-left: 0; }
+  .slide:nth-of-type(4) .two-col{ column-gap: 26px; }
+</style>
+
+<style>
+  /* Progress bar & counter */
+  .progress{position:absolute; left:14px; right:14px; bottom:8px; height:4px; background:rgba(255,255,255,.06); border-radius:4px; overflow:hidden}
+  .progress .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), rgba(105,166,255,.35)); transition:width .3s ease}
+  .counter{position:absolute; bottom:16px; left:16px; font-size:12px; color:var(--muted)}
+
+  /* Print to PDF: one slide per page, landscape */
+  @media print{
+    @page{ size: A4 landscape; margin: 10mm; }
+    html, body{ background: #fff !important; }
+    .deck{ position:static; width:auto; height:auto; transform:none; box-shadow:none; border-radius:0; }
+    .slide{ position:relative; opacity:1 !important; transform:none !important; page-break-after:always; padding:22mm; }
+    .controls, .dots, .hint, .progress, .counter{ display:none !important; }
+    .slide > header{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+
+<body>
+<div class="deck" id="deck">
+
+  <!-- Slide 1: Title & Hook -->
+  <section class="slide active">
+    <header>
+      <div>
+        <div class="title" style="font-size:28px">Dhruv Ojha for VP: Tech & Innovation Club</div>
+        <div class="subtitle">Indian School of Business</div>
+      </div>
+      <div class="logo" aria-hidden="true">L • I • F • T</div>
+    </header>
+    <div class="content" style="align-self:center">
+      <div class="hero">
+        <div class="panel">
+          <h1>Let’s LIFT ISB</h1>
+          <p style="margin-top:6px; color: var(--muted); font-size:16px;">Learn • Include • Fuse • Thrive</p>
+          <p class="big">📍 <strong>Making Tech Work for Everyone at ISB</strong></p>
+          <div style="height:6px"></div>
+          <p class="quote">“From literature grads to seasoned coders: there’s something here for everyone.”</p>
+        </div>
+        <div class="hero-photo" title="Dhruv Ojha"></div>
+      </div>
+    </div>
+    <div class="dots" aria-label="Slide navigation dots"></div>
+  </section>
+
+  <!-- Slide 2: The Vision -->
+  <section class="slide">
+    <header><div class="title" style="font-size:28px">Vision</div><div class="logo" aria-hidden="true">ISB × T&amp;I</div></header>
+    <div class="content" style="align-self:center">
+      <h2>Make technology a practical edge for every ISB student: accessible, collaborative, and career-accelerating across domains.</h2>
+      <ul>
+        <li>🎯 <strong>Learn</strong>: From Fundamentals to Fluency</li>
+        <li>🤝 <strong>Include</strong>: Welcoming formats, buddy support, cross-cohort access</li>
+        <li>🧪 <strong>Apply</strong>: Real cases, ISBuild prototypes, reusable toolkits</li>
+      </ul>
+    </div>
+    <div class="dots" aria-label="Slide navigation dots"></div>
+  </section>
+
+  <!-- Slide 3: The L.I.F.T. Framework (Accordion on phones) -->
+  <section class="slide">
+    <header><div class="title" style="font-size:28px">The L.I.F.T. Framework</div><div class="logo" aria-hidden="true">L • I • F • T</div></header>
+    <div class="content lift-grid">
+
+      <!-- L -->
+      <div class="card acc">
+        <button class="acc-head" type="button" aria-expanded="true">
+          <span class="kicker">L: Learning</span>
+          <span class="title-wrap"><h3 style="margin:0"><span class="icon">📚</span>Workshops & Learning Hub</h3></span>
+          <span class="chev">⌄</span>
+        </button>
+        <div class="acc-panel">
+          <ul>
+            <li><strong>Hands-on Workshops</strong>: Tableau, Power BI, AI tools, No-code, Python for Business.</li>
+            <li><strong>Learning Hub</strong>: beginner-to-advanced tracks; bite-size modules; templates & checklists; <strong>peer-to-peer guidance</strong>.</li>
+            <li><strong>Tech Tuesdays</strong>: 20-min peer demos on real use-cases.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- I -->
+      <div class="card acc">
+        <button class="acc-head" type="button" aria-expanded="false">
+          <span class="kicker">I: Inclusion</span>
+          <span class="title-wrap"><h3 style="margin:0"><span class="icon">🤝</span>Access for All</h3></span>
+          <span class="chev">⌄</span>
+        </button>
+        <div class="acc-panel">
+          <ul>
+            <li><strong>Buddy system</strong> & <strong>peer mentors</strong>.</li>
+            <li><strong>Jargon-free guides</strong> so anyone can start and implement tools fast.</li>
+            <li><strong>Role primers</strong> for non-tech fields to translate tech into domain advantage.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- F -->
+      <div class="card acc">
+        <button class="acc-head" type="button" aria-expanded="false">
+          <span class="kicker">F: Fusion</span>
+          <span class="title-wrap"><h3 style="margin:0"><span class="icon">🔄</span>Cross-domain & Cross-club</h3></span>
+          <span class="chev">⌄</span>
+        </button>
+        <div class="acc-panel">
+          <ul>
+            <li><strong>T&amp;I × Consulting/Finance/Marketing/etc. collaborations</strong>: how tech shapes each domain, with case studies.</li>
+            <li><strong>PGP × PGPYL squads</strong> for leveraging experience and exposure.</li>
+            <li><strong>ISBuild</strong>: no-code prototype challenges for real business problems.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- T -->
+      <div class="card acc">
+        <button class="acc-head" type="button" aria-expanded="false">
+          <span class="kicker">T: Thrive</span>
+          <span class="title-wrap"><h3 style="margin:0"><span class="icon">🚀</span>Career Enablement</h3></span>
+          <span class="chev">⌄</span>
+        </button>
+        <div class="acc-panel">
+          <ul>
+            <li><strong>Industry deep-dives</strong> and <strong>faculty masterclasses</strong>.</li>
+            <li><strong>Career maps</strong>, interview prep workshops, <strong>alumni resume reviews</strong>.</li>
+            <li><strong>Tech@ISB</strong> newsletter: trends, tools, opportunities.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <div class="dots" aria-label="Slide navigation dots"></div>
+  </section>
+
+  <!-- Slide 4: Why it Works for Non-Tech People -->
+  <section class="slide">
+    <header><div class="title" style="font-size:28px">Why it Works for Non-Tech People</div></header>
+    <div class="content" style="align-self:center">
+      <h2>Not here to make everyone a coder; here to make everyone effective.</h2>
+      <ul class="two-col">
+        <li>✅ <strong>Role primers</strong> that translate tech to your domain.</li>
+        <li>✅ <strong>Low-barrier entry challenges</strong> to build confidence without prior coding.</li>
+        <li>✅ <strong>Jargon-free templates</strong> and quick-start guides.</li>
+        <li>✅ <strong>Cross-domain case studies</strong> to apply tech in your field.</li>
+      </ul>
+    </div>
+    <div class="dots" aria-label="Slide navigation dots"></div>
+  </section>
+
+  <!-- Slide 5: Why Me? -->
+  <section class="slide">
+    <header><div class="title" style="font-size:28px">Why I’m the Right Choice for VP (T&amp;I)</div></header>
+    <div class="content grid-2" style="align-self:center">
+      <div class="card">
+        <span class="kicker">Tech + Business blend</span>
+        <ul>
+          <li>💻 Computer & Communication Engineering: <strong>Manipal Institute of Technology</strong>.</li>
+          <li>🏢 Former <strong>Software Developer</strong> at <strong>SAP Labs</strong>.</li>
+          <li>🚀 <strong>Led hackathons</strong> & <strong>AI-enabled projects</strong>.</li>
+          <li>📚 <strong>Helped peers ramp up</strong> on product thinking & tech skills via <strong>quickstart guides</strong> & <strong>hands-on sessions</strong>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="kicker">Mindset</span>
+        <ul>
+          <li>🌍 Inclusive by default: tech should <strong>reduce barriers</strong>, not add them.</li>
+          <li>🧰 Practical over flashy: <strong>tools you can apply the same day</strong>.</li>
+          <li>🤝 Collaborative: <strong>cross-domain learning</strong> and co-creation.</li>
+          <li>📈 Outcome-first: <strong>measurable impact</strong> on internships & placements.</li>
+        </ul>
+      </div>
+      <div class="card" style="grid-column:1/-1; text-align:center; margin-top:6px">
+        <span class="kicker">Highlights</span>
+        <div style="display:flex; justify-content:center; gap:32px; margin-top:12px">
+          <div style="display:flex; flex-direction:column; align-items:center">
+            <div style="font-size:32px">👨‍💻</div>
+            <div style="margin-top:6px; font-weight:700">Mentor</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center">
+            <div style="font-size:32px">🛠️</div>
+            <div style="margin-top:6px; font-weight:700">Builder</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center">
+            <div style="font-size:32px">🤝</div>
+            <div style="margin-top:6px; font-weight:700">Collaborator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dots" aria-label="Slide navigation dots"></div>
+  </section>
+
+  <!-- Slide 6: Call to Action -->
+  <section class="slide">
+    <header><div class="title" style="font-size:28px">Call to Action</div><div class="logo" aria-hidden="true">Vote</div></header>
+    <div class="content" style="align-self:center">
+      <h2>We’ll bring the tech: you bring the innovation 🚀</h2>
+      <ul>
+        <li>📢 DM to discuss ideas or collabs.</li>
+        <li>🗳 Vote Dhruv for VP (T&amp;I).</li>
+        <li>⭐ Most importantly: vote for T&amp;I!!</li>
+      </ul>
+    </div>
+    <div class="dots" aria-label="Slide navigation dots"></div>
+  </section>
+
+</div>
+
+<!-- Controls, progress, compact toggle -->
+<div class="controls">
+  <div class="arrow" id="prev" aria-label="Previous slide">◀</div>
+  <div class="arrow" id="next" aria-label="Next slide">▶</div>
+</div>
+<div class="hint">Use ← / → or tap ▶</div>
+<div class="progress" aria-hidden="true"><div class="bar" id="progbar"></div></div>
+<div class="counter" id="counter" aria-label="Slide counter" aria-live="polite"></div>
+<button class="compact-toggle" id="compactToggle" aria-pressed="false" title="Toggle Compact mode">Compact</button>
+
+<script>
+(function(){
+  const deck = document.getElementById('deck');
+  const slides = Array.from(deck.querySelectorAll('.slide'));
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const dotsContainers = deck.querySelectorAll('.dots');
+  const progbar = document.getElementById('progbar');
+  const counter = document.getElementById('counter');
+  const compactBtn = document.getElementById('compactToggle');
+  let i = 0;
+
+  /* Restore saved compact preference */
+  try{
+    const savedCompact = localStorage.getItem('lift_compact') === '1';
+    if(savedCompact){ document.body.classList.add('compact'); compactBtn.setAttribute('aria-pressed','true'); compactBtn.textContent = 'Compact: On'; }
+  }catch{}
+
+  /* Deep-link like ?slide=3 (1-indexed) */
+  const params = new URLSearchParams(location.search);
+  const start = Math.max(1, Math.min(parseInt(params.get('slide')||'1',10), slides.length));
+  slides.forEach(s => s.classList.remove('active'));
+  i = start - 1;
+  slides[i].classList.add('active');
+
+  /* Build dots once (same count on each slide's dot-bar) */
+  const total = slides.length;
+  dotsContainers.forEach(dc => {
+    for(let d=0; d<total; d++){
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (d===i?' active':'');
+      dot.setAttribute('role','button');
+      dot.setAttribute('tabindex','0');
+      dot.setAttribute('aria-label', 'Go to slide ' + (d+1));
+      dot.setAttribute('aria-current', d===i ? 'true' : 'false');
+      dc.appendChild(dot);
+    }
+  });
+
+  function updateDots(idx){
+    dotsContainers.forEach(dc => {
+      Array.from(dc.children).forEach((dot, j) => {
+        dot.classList.toggle('active', j === idx);
+        dot.setAttribute('aria-current', (j===idx) ? 'true' : 'false');
+      });
+    });
+  }
+
+  /* Fit content of current slide (header + dots safe area) */
+  function fitSlide(slide){
+    if(!slide) return;
+    const content = slide.querySelector(':scope > .content');
+    if(!content){ return; }
+
+    content.style.transform = ''; // reset
+    const header = slide.querySelector(':scope > header');
+    const dots = slide.querySelector(':scope > .dots');
+
+    const sh = slide.clientHeight;
+    const headerH = header ? header.offsetHeight : 0;
+    const dotsH = dots ? (dots.offsetHeight + 18) : 0; // safe gap
+    const available = Math.max(0, sh - headerH - dotsH);
+    const needed = content.scrollHeight;
+    let s = available > 0 ? Math.min(1, available / needed) : 1;
+
+    if (window.matchMedia('(max-width: 640px)').matches) {
+      s = available > 0 ? Math.min(1, available / needed) : 1;
+    }
+    content.style.transform = (s < 1) ? `scale(${s})` : '';
+  }
+
+  function updateUI(){
+    const pct = ((i+1)/slides.length)*100;
+    if(progbar) progbar.style.width = pct + '%';
+    if(counter) counter.textContent = (i+1) + '/' + slides.length;
+    updateDots(i);
+    const url = new URL(location.href);
+    url.searchParams.set('slide', String(i+1));
+    history.replaceState(null, '', url.toString());
+  }
+
+  function activate(n){
+    slides[i].classList.remove('active');
+    i = (n + total) % total;
+    slides[i].classList.add('active');
+    fitSlide(slides[i]);
+    updateUI();
+  }
+
+  function fit(){
+    const root = getComputedStyle(document.documentElement);
+    const W = parseFloat(root.getPropertyValue('--w'));
+    const H = parseFloat(root.getPropertyValue('--h'));
+    const s = Math.min(innerWidth/W, innerHeight/H);
+    deck.style.transform = `translate(-50%,-50%) scale(${s})`;
+    fitSlide(slides[i]);
+  }
+  addEventListener('resize', fit, {passive:true});
+  fit(); updateUI(); fitSlide(slides[i]);
+
+  next.addEventListener('click', ()=>activate(i+1));
+  prev.addEventListener('click', ()=>activate(i-1));
+  addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') activate(i+1);
+    if(e.key==='ArrowLeft') activate(i-1);
+  }, {passive:true});
+
+  /* Dot nav (click + keyboard) */
+  slides.forEach((_, slideIdx)=>{
+    const nav = slides[slideIdx].querySelector('.dots');
+    nav.addEventListener('click', (e)=>{
+      const dot = e.target.closest('.dot');
+      if(!dot) return;
+      const idx = Array.from(nav.children).indexOf(dot);
+      activate(idx);
+      e.stopPropagation();
+    });
+    nav.addEventListener('keydown', (e)=>{
+      const dot = e.target.closest('.dot');
+      if(!dot) return;
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const idx = Array.from(nav.children).indexOf(dot);
+        activate(idx);
+      }
+    });
+  });
+
+  /* Tap/Click anywhere to advance (ignore arrows/links/selections) */
+  deck.addEventListener('click', (e)=>{
+    if(e.target.closest('.arrow')) return;
+    if(e.target.closest('a')) return;
+    if(String(window.getSelection())) return;
+    activate(i+1);
+  });
+
+  /* Swipe */
+  let sx=null;
+  addEventListener('touchstart', e=>{ sx = e.touches[0].clientX; }, {passive:true});
+  addEventListener('touchend', e=>{
+    if(sx==null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if(Math.abs(dx)>40) activate(i + (dx<0?1:-1));
+    sx = null;
+  }, {passive:true});
+
+  /* Compact toggle */
+  if(compactBtn){
+    compactBtn.addEventListener('click', ()=>{
+      const on = document.body.classList.toggle('compact');
+      compactBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      compactBtn.textContent = on ? 'Compact: On' : 'Compact';
+      try{ localStorage.setItem('lift_compact', on ? '1' : '0'); }catch{}
+      fit();
+    });
+  }
+
+  /* --------- Mobile Accordion for LIFT slide ---------- */
+  const mq = window.matchMedia('(max-width: 640px)');
+  const accCards = () => Array.from(document.querySelectorAll('.lift-grid .acc'));
+  function setAccordion(on){
+    accCards().forEach((card, idx)=>{
+      const head = card.querySelector('.acc-head');
+      const panel = card.querySelector('.acc-panel');
+      if(!head || !panel) return;
+
+      // Ensure IDs/ARIA
+      const pid = panel.id || `acc_${idx}`;
+      panel.id = pid;
+      head.setAttribute('aria-controls', pid);
+
+      if(on){
+        // default: first open, others closed
+        const expanded = (idx===0);
+        head.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        panel.style.maxHeight = expanded ? panel.scrollHeight + 'px' : '0px';
+        head.tabIndex = 0;
+      }else{
+        // desktop: show everything
+        head.setAttribute('aria-expanded','true');
+        panel.style.maxHeight = 'none';
+        head.tabIndex = -1;
+      }
+    });
+  }
+  // Toggle handler
+  function toggleAcc(e){
+    const head = e.currentTarget;
+    if(!mq.matches) return; // only act on phones
+    const panel = document.getElementById(head.getAttribute('aria-controls'));
+    const willOpen = head.getAttribute('aria-expanded') !== 'true';
+    // close all
+    accCards().forEach(c=>{
+      const h = c.querySelector('.acc-head');
+      const p = c.querySelector('.acc-panel');
+      h.setAttribute('aria-expanded','false');
+      p.style.maxHeight = '0px';
+    });
+    // open selected
+    if(willOpen){
+      head.setAttribute('aria-expanded','true');
+      // force reflow to get accurate height after style changes
+      panel.style.maxHeight = 'none';
+      const h = panel.scrollHeight;
+      panel.offsetHeight; // reflow
+      panel.style.maxHeight = h + 'px';
+    }
+  }
+  // Bind events once
+  accCards().forEach(c=>{
+    const h = c.querySelector('.acc-head');
+    if(!h) return;
+    h.addEventListener('click', toggleAcc);
+    h.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault(); toggleAcc(e);
+      }
+    });
+  });
+
+  // Initialize based on viewport
+  function applyAcc(){
+    setAccordion(mq.matches);
+    // after media switch, recalc open panel height and refit slide
+    requestAnimationFrame(()=>{
+      if(mq.matches){
+        accCards().forEach(card=>{
+          const head = card.querySelector('.acc-head');
+          const panel = card.querySelector('.acc-panel');
+          const open = head.getAttribute('aria-expanded')==='true';
+          panel.style.maxHeight = open ? (panel.scrollHeight + 'px') : '0px';
+        });
+      }
+      fitSlide(slides[i]);
+    });
+  }
+  mq.addEventListener('change', applyAcc, {passive:true});
+  applyAcc();
+  /* ---------------------------------------------------- */
+
+})();
+</script>
+</body>
+</html>
